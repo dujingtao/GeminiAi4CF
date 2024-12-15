@@ -1,0 +1,78 @@
+const API_KEY = "AIzaSyD3mS5tCAZYfy5NglCcBQL5vWa21J33wug";
+const MODEL_NAME = "gemini-pro-vision"; // 选择合适的 Gemini 模型
+
+async function callGeminiAPI(prompt, imageBlob = null) {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${API_KEY}`;
+
+  const parts = [];
+  parts.push({ text: prompt });
+
+  if (imageBlob) {
+    parts.push({
+      inlineData: {
+        mimeType: "image/jpeg", // 修改为你实际的图片类型
+        data: arrayBufferToBase64(await imageBlob.arrayBuffer()),
+      }
+    });
+  }
+
+  const body = {
+    contents: [{
+      parts
+    }],
+  };
+    
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const data = await response.json();
+    const textOutput = data.candidates[0].content.parts[0].text;
+    return textOutput;
+
+  } catch (error) {
+    console.error("Error calling Gemini API:", error);
+    return "Error processing your request.";
+  }
+}
+
+function arrayBufferToBase64(buffer) {
+    let binary = '';
+    const bytes = new Uint8Array(buffer);
+    const len = bytes.byteLength;
+    for (let i = 0; i < len; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+    return btoa(binary);
+  }
+
+
+// 示例：处理文本输入
+const textInput = document.getElementById("textInput");
+const textSubmitButton = document.getElementById("textSubmitButton");
+const textOutput = document.getElementById("textOutput");
+
+textSubmitButton.addEventListener("click", async () => {
+  const prompt = textInput.value;
+  const outputText = await callGeminiAPI(prompt);
+  textOutput.textContent = outputText;
+});
+
+// 示例：处理图片上传
+const imageInput = document.getElementById("imageInput");
+const imageOutput = document.getElementById("imageOutput");
+imageInput.addEventListener("change", async () => {
+  const file = imageInput.files[0];
+  if(file){
+    const outputText = await callGeminiAPI("Analyze this image.", file);
+    imageOutput.textContent = outputText;
+  }
+});
