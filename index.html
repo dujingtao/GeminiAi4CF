@@ -1,5 +1,5 @@
 const API_KEY = "AIzaSyD3mS5tCAZYfy5NglCcBQL5vWa21J33wug";
-const MODEL_NAME = "gemini-pro-vision"; // 选择合适的 Gemini 模型
+const MODEL_NAME = "gemini-2.0-flash-exp"; // 选择合适的 Gemini 模型
 
 async function callGeminiAPI(prompt, imageBlob = null) {
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${API_KEY}`;
